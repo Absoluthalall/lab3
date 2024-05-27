@@ -17,15 +17,6 @@ import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeSelectionModel;
 
 public class Main {
-    public static HashMap<String, Reactor> func(String fileName) throws IOException, ParseException, ParserConfigurationException, SAXException {
-        JsonHandler jsonHandler = new JsonHandler();
-        XmlHandler xmlHandler = new XmlHandler();
-        YamlHandler yamlHandler = new YamlHandler();
-        yamlHandler.setNextHandler(xmlHandler);
-        xmlHandler.setNextHandler(jsonHandler);
-        HashMap<String, Reactor> reactors = yamlHandler.repeat(fileName);
-        return reactors;
-    }
 
     public static void main(String[] args) {
         JFrame frame = new JFrame("Frame");
@@ -46,7 +37,8 @@ public class Main {
                     System.out.println(file.getAbsolutePath());
                     HashMap<String, Reactor> hashMap = null;
                     try {
-                        hashMap = func(file.getAbsolutePath());
+                        Client client = new Client(file.getAbsolutePath());
+                        hashMap = client.start();
                     } catch (IOException | ParseException | ParserConfigurationException | SAXException ex) {
                         ex.printStackTrace();
                     }
@@ -55,15 +47,7 @@ public class Main {
 
                     for (Map.Entry<String, Reactor> entry : hashMap.entrySet()) {
                         DefaultMutableTreeNode reactorNode = new DefaultMutableTreeNode(entry.getKey());
-                        reactorNode.add(new DefaultMutableTreeNode("class: " + entry.getValue().clas));
-                        reactorNode.add(new DefaultMutableTreeNode("burnap: " + entry.getValue().burnup));
-                        reactorNode.add(new DefaultMutableTreeNode("kpd: " + entry.getValue().kpd));
-                        reactorNode.add(new DefaultMutableTreeNode("enrichment: " + entry.getValue().enrichment));
-                        reactorNode.add(new DefaultMutableTreeNode("terminalCapacity: " + entry.getValue().terminalCapacity));
-                        reactorNode.add(new DefaultMutableTreeNode("electricalCapacity: " + entry.getValue().electricalCapacity));
-                        reactorNode.add(new DefaultMutableTreeNode("lifeTime: " + entry.getValue().lifeTime));
-                        reactorNode.add(new DefaultMutableTreeNode("firstLoad: " + entry.getValue().firstLoad));
-                        reactorNode.add(new DefaultMutableTreeNode("type: " + entry.getValue().type));
+                        reactorNode = entry.getValue().getNode(reactorNode);
                         treeModel.insertNodeInto((MutableTreeNode) reactorNode, (MutableTreeNode) treeModel.getRoot(), treeModel.getChildCount(treeModel.getRoot()));
                     }
                     JTree tree = new JTree(treeModel);
